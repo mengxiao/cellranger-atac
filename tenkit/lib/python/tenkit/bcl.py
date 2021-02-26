@@ -117,11 +117,13 @@ def get_rta_version(input_path):
         rc_i2 = True
     elif application.find("MiSeq") >= 0:
         rc_i2 = False
-    # according to https://support.illumina.com/content/dam/illumina-support/documents/documentation/system_documentation/miseq/indexed-sequencing-overview-guide-15057455-03.pdf
-    # NovaSeq follows MiSeq/HiSeq 2500 workflow for I5 index; this is effectively
-    # a noop thanks to rc_i2 being False by default but let's make it explicit
     elif application.find("NovaSeq") >= 0:
         rc_i2 = False
+        # Novaseq SBS v1.5 chemistry reads i5 from opposite strand relative to v1 chemistry
+        # https://support.illumina.com/bulletins/2020/11/introducing-the-novaseq--6000-v1-5-reagents.html
+        # empirically, this appears to be coded as SbsConsumableVersion 3
+        if tree.getroot().find("RfidsInfo").find("SbsConsumableVersion").text == "3":
+            rc_i2 = True
     elif application.find("HiSeq") >= 0:
         # Hiseq 4000 has version 3 -- hopefully this is stable??
         app_str = re.search(r'[\d\.]+', application_version).group()
